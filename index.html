@@ -7,6 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lab 9</title>
 
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+  <script>
+    window.TrackJS && TrackJS.install({
+      token: "b041f82532214f0998efa5f829b54b36"
+    });
+  </script>
+
   <style>
     button {
       margin: 3px;
@@ -84,6 +91,7 @@
       <button>End Timer</button>
       <button>Console Trace</button>
       <button>Trigger a Global Error</button>
+      <button id="trackjs-test">TrackJS Test</button>
     </section>
   </main>
 
@@ -98,10 +106,112 @@
       output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
     });
 
-    let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
+    document.querySelectorAll('#error-btns > button').forEach((button, index) => {
+      button.addEventListener('click', () => {
+        switch (index) {
+          case 0:
+            console.log("This is a console log message");
+            break;
+          case 1:
+            console.error("This is a console error message");
+            break;
+          case 2:
+            console.count("Count Label");
+            break;
+          case 3:
+            console.warn("This is a console warn message");
+            break;
+          case 4:
+            console.assert(false, "This is a console assert message");
+            break;
+          case 5:
+            console.clear();
+            break;
+          case 6:
+            console.dir(document.body);
+            break;
+          case 7:
+            console.dirxml(document);
+            break;
+          case 8:
+            console.group("Group Start");
+            console.log("Inside group");
+            break;
+          case 9:
+            console.groupEnd();
+            break;
+          case 10:
+            console.table([{ a: 1, b: 'Y' }, { a: 'Z', b: 2 }]);
+            break;
+          case 11:
+            console.time("Timer");
+            break;
+          case 12:
+            console.timeEnd("Timer");
+            break;
+          case 13:
+            console.trace();
+            break;
+          case 14:
+            try {
+              nonExistentFunction();
+            } catch (error) {
+              console.error("Global error caught:", error);
+            }
+            break;
+        }
+      });
+    });
 
-    // Start your code here
-    // You may move this JS to another file if you wish
+    // Global error handler
+    window.onerror = function (message, source, lineno, colno, error) {
+      console.log("Global error caught:", message);
+
+      // Send error details to server 
+      fetch('https://example.com/log-error', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: message,
+          source: source,
+          lineno: lineno,
+          colno: colno,
+          error: error.toString()
+        })
+      });
+
+      return true;  // Prevent the default browser error handler
+    };
+
+    // Try/Catch/Finally and Custom Errors example
+    try {
+      // Code that may throw an error
+      nonExistentFunction();
+    } catch (error) {
+      console.error("Caught an error:", error);
+    } finally {
+      console.log("This will always run, error or no error");
+    }
+
+    class CustomError extends Error {
+      constructor(message) {
+        super(message);
+        this.name = "CustomError";
+      }
+    }
+
+    try {
+      throw new CustomError("This is a custom error");
+    } catch (error) {
+      console.error(error.name + ': ' + error.message);
+    }
+
+    // Button to manually trigger a TrackJS error
+    document.getElementById('trackjs-test').addEventListener('click', () => {
+      TrackJS.track('Testing TrackJS!');
+    });
   </script>
 </body>
 
