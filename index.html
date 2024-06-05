@@ -7,10 +7,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lab 9</title>
 
+  <!-- Ensure this is the first script in the head -->
   <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
   <script>
-    window.TrackJS && TrackJS.install({
-      token: "b041f82532214f0998efa5f829b54b36"
+    window.addEventListener('load', function () {
+      if (window.TrackJS) {
+        TrackJS.install({
+          token: "b041f82532214f0998efa5f829b54b36"
+        });
+        console.log('TrackJS loaded and installed');
+
+        // Adding the event listener after ensuring TrackJS is loaded
+        document.getElementById('trackjs-test').addEventListener('click', () => {
+          TrackJS.track('Testing TrackJS!');
+        });
+
+      } else {
+        console.error('TrackJS failed to load');
+      }
     });
   </script>
 
@@ -167,20 +181,25 @@
     window.onerror = function (message, source, lineno, colno, error) {
       console.log("Global error caught:", message);
 
-      // Send error details to server 
-      fetch('https://example.com/log-error', {
+      // Send error details to a mock API for testing
+      fetch('https://jsonplaceholder.typicode.com/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          message: message,
-          source: source,
-          lineno: lineno,
-          colno: colno,
-          error: error.toString()
+          title: 'Error Log',
+          body: {
+            message: message,
+            source: source,
+            lineno: lineno,
+            colno: colno,
+            error: error.toString()
+          },
+          userId: 1
         })
-      });
+      }).then(response => response.json())
+        .then(json => console.log("Error logged to mock server:", json));
 
       return true;  // Prevent the default browser error handler
     };
@@ -207,11 +226,6 @@
     } catch (error) {
       console.error(error.name + ': ' + error.message);
     }
-
-    // Button to manually trigger a TrackJS error
-    document.getElementById('trackjs-test').addEventListener('click', () => {
-      TrackJS.track('Testing TrackJS!');
-    });
   </script>
 </body>
 
